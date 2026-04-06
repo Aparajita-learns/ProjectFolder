@@ -1,0 +1,11 @@
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = [
+    "phase1_ingestion/tests",
+    "phase2_query/tests",
+    "phase4_integration/tests",
+    "phase5_llm/tests",
+]
+markers = [
+    "integration: calls external Groq API (requires GROQ_API_KEY)",
+]

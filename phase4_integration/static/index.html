@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zomato Restaurant Finder</title>
+  <style>
+    :root {
+      font-family: Okra, Helvetica, sans-serif;
+      --bg: #f8f8f8;
+      --card: #ffffff;
+      --text-main: #1c1c1c;
+      --text-muted: #696969;
+      --zomato-red: #cb202d;
+      --zomato-red-hover: #e23744;
+      --rating-green: #24963F;
+      --border-light: #e8e8e8;
+    }
+    * { box-sizing: border-box; }
+    
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background-color: var(--bg);
+      background-image: url('/assets/body_bg.png'); /* Colorful Food Background */
+      background-size: cover;
+      background-attachment: fixed;
+      background-position: center;
+      color: var(--text-main);
+      line-height: 1.5;
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      height: 480px; /* Slightly taller to accommodate animated border */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background-image: url('/assets/hero_banner.png');
+      background-size: cover;
+      background-position: center;
+      color: white;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6); /* darker overlay for better text contrast */
+      z-index: 1;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 900px;
+      padding: 0 1rem;
+    }
+    .hero-logo {
+      font-size: 3.5rem; /* Reduced slightly to fit title "Zomato Restaurant Finder" */
+      font-weight: 800;
+      font-style: italic;
+      letter-spacing: -2px;
+      margin: 0;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+    }
+    .hero-subtitle {
+      font-size: 1.5rem;
+      margin: 0.5rem 0 2rem;
+      font-weight: 400;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+    }
+
+    /* Animated Gemini-style Border Wrapper */
+    .form-animated-wrapper {
+      position: relative;
+      padding: 4px; /* Border thickness */
+      border-radius: 16px; /* Slightly more than form's border-radius */
+      overflow: hidden;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    
+    .form-animated-wrapper::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: conic-gradient(
+        from 0deg, 
+        transparent 0%, 
+        #4285f4 20%, 
+        #d96570 40%, 
+        #cb202d 60%, 
+        transparent 80%
+      );
+      animation: spin-gradient 4s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes spin-gradient {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Search Form */
+    form {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      text-align: left;
+      position: relative;
+      z-index: 2;
+    }
+    .form-group-full { grid-column: span 2; }
+    
+    label { display: grid; gap: 0.35rem; font-size: 0.85rem; color: var(--text-muted); font-weight: 500;}
+    input, select, textarea, button {
+      font: inherit;
+      border-radius: 8px;
+      border: 1px solid #cfcfcf;
+      background: #fff;
+      color: var(--text-main);
+      padding: 0.7rem 1rem;
+      transition: border 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--zomato-red);
+    }
+    textarea { min-height: 3rem; resize: vertical; }
+
+    button {
+      background: var(--zomato-red);
+      color: white;
+      border: none;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 0.8rem 1.5rem;
+      justify-self: center;
+      transition: background 0.2s, transform 0.1s;
+      width: 100%;
+    }
+    button:hover { background: var(--zomato-red-hover); transform: translateY(-1px); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Results layout */
+    .wrap {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem 4rem;
+    }
+    
+    #out { margin-top: 2rem; }
+    
+    .summary {
+      background: rgba(255, 255, 255, 0.95);
+      border-left: 4px solid var(--zomato-red);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(4px);
+    }
+    .card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+    .card h3 { 
+      margin: 0; 
+      font-size: 1.3rem; 
+      color: var(--text-main);
+    }
+    
+    .rating-badge {
+      background: var(--rating-green);
+      color: white;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    
+    .meta { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .cuisines { color: var(--text-muted); padding-bottom: 0.5em; border-bottom: 1px dashed var(--border-light); margin-bottom: 0.5em;}
+    
+    .explain { 
+      font-size: 0.95rem; 
+      color: var(--text-main); 
+      margin-top: 0.5rem;
+      line-height: 1.6;
+    }
+    
+    .warn { color: #d97706; font-size: 0.85rem; margin-top: 0.5rem; background: #fff3e0; padding: 0.5rem; border-radius: 6px;}
+    .err { color: var(--zomato-red); margin-top: 1rem; text-align: center; background: #fff; padding: 1rem; border-radius: 8px;}
+    .debug { font-size: 0.75rem; color: #fff; margin-top: 2rem; text-align: center; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+
+    /* Loader */
+    .loader {
+      text-align: center;
+      color: #fff;
+      font-weight: 600;
+      padding: 2rem;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @media (max-width: 600px) {
+      form { grid-template-columns: 1fr; }
+      .form-group-full { grid-column: span 1; }
+      .hero-logo { font-size: 2.5rem; }
+      .hero-subtitle { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="hero-content">
+      <h1 class="hero-logo">Zomato Restaurant Finder</h1>
+      
+      <div class="form-animated-wrapper">
+        <form id="f">
+          <label>Location
+            <select name="location" required>
+              <option value="" disabled selected>Select a location</option>
+              <option value="BTM">BTM</option>
+              <option value="Banashankari">Banashankari</option>
+              <option value="Bannerghatta Road">Bannerghatta Road</option>
+              <option value="Basavanagudi">Basavanagudi</option>
+              <option value="Bellandur">Bellandur</option>
+              <option value="Brigade Road">Brigade Road</option>
+              <option value="Brookefield">Brookefield</option>
+              <option value="Church Street">Church Street</option>
+              <option value="Electronic City">Electronic City</option>
+              <option value="Frazer Town">Frazer Town</option>
+              <option value="HSR">HSR</option>
+              <option value="Indiranagar">Indiranagar</option>
+              <option value="JP Nagar">JP Nagar</option>
+              <option value="Jayanagar">Jayanagar</option>
+              <option value="Kalyan Nagar">Kalyan Nagar</option>
+              <option value="Kammanahalli">Kammanahalli</option>
+              <option value="Koramangala 4th Block">Koramangala 4th Block</option>
+              <option value="Koramangala 5th Block">Koramangala 5th Block</option>
+              <option value="Koramangala 6th Block">Koramangala 6th Block</option>
+              <option value="Koramangala 7th Block">Koramangala 7th Block</option>
+              <option value="Lavelle Road">Lavelle Road</option>
+              <option value="MG Road">MG Road</option>
+              <option value="Malleshwaram">Malleshwaram</option>
+              <option value="Marathahalli">Marathahalli</option>
+              <option value="New BEL Road">New BEL Road</option>
+              <option value="Old Airport Road">Old Airport Road</option>
+              <option value="Rajajinagar">Rajajinagar</option>
+              <option value="Residency Road">Residency Road</option>
+              <option value="Sarjapur Road">Sarjapur Road</option>
+              <option value="Whitefield">Whitefield</option>
+            </select>
+          </label>
+          
+          <label>Budget
+            <select name="budget">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+          
+          <label class="form-group-full">Cuisines / Keywords
+            <input name="cuisines" placeholder="e.g. chinese, pizza, north indian" />
+          </label>
+          
+          <label>Min Rating
+            <input name="min_rating" type="number" step="1" min="0" max="5" placeholder="e.g. 4" />
+          </label>
+          
+          <input type="hidden" name="desired_top_k" value="5" />
+          
+          <label class="form-group-full">Special Requirements
+            <textarea name="additional_preferences" placeholder="romantic, family-friendly, live music..."></textarea>
+          </label>
+          
+          <div class="form-group-full">
+            <button type="submit" id="go">Search Restaurants</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="out"></div>
+  </div>
+
+  <script>
+    const out = document.getElementById("out");
+    const go = document.getElementById("go");
+
+    document.getElementById("f").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const minR = fd.get("min_rating");
+      const body = {
+        location: (fd.get("location") || "").trim(),
+        budget: fd.get("budget"),
+        cuisines: (fd.get("cuisines") || "").split(",").map(s => s.trim()).filter(Boolean),
+        min_rating: minR === "" || minR == null ? null : Number(minR),
+        additional_preferences: (fd.get("additional_preferences") || "").trim(),
+        desired_top_k: Number(fd.get("desired_top_k") || 5),
+      };
+
+      go.disabled = true;
+      out.innerHTML = `<div class="loader"><div class="spinner"></div> Finding the best recommendations for you...</div>`;
+      
+      try {
+        const res = await fetch("/api/v1/recommend", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({}));
+        
+        if (!res.ok) {
+          out.innerHTML = `<p class="err">Error ${res.status}: ${escapeHtml(JSON.stringify(data.detail || data))}</p>`;
+          return;
+        }
+
+        let html = "";
+        
+        if (data.summary) {
+          html += `<div class="summary"><strong>Why these?</strong><br/>${escapeHtml(data.summary)}</div>`;
+        }
+        
+        if (data.warnings && data.warnings.length) {
+          html += data.warnings.map(w => `<p class="warn">⚠ ${escapeHtml(w)}</p>`).join("");
+        }
+
+        if (!data.results || !data.results.length) {
+          html += "<div class='card'><p style='text-align:center;'>No results. Try relaxing filters or another location.</p></div>";
+        } else {
+          for (const r of data.results) {
+            const cuisines = (r.cuisines || []).join(", ");
+            const ratingNumber = r.rating != null ? Math.round(r.rating) : "NEW";
+            // Zomato style rating colors (grey-ish for lower, darker green for higher)
+            let ratingColor = "var(--rating-green)";
+            if(r.rating && r.rating < 3.0) ratingColor = "#d9534f";
+            else if(r.rating && r.rating < 4.0) ratingColor = "#f0ad4e";
+
+            const ratingBlock = `<div class="rating-badge" style="background-color: ${ratingColor};">${ratingNumber} ☆</div>`;
+            
+            const cost = r.estimated_cost_label || "Unknown Cost";
+            const ac = r.approx_cost_for_two != null ? ` · ₹${r.approx_cost_for_two} for two` : "";
+            
+            html += `
+            <article class="card">
+              <div class="card-header">
+                <h3>${escapeHtml(r.name || r.restaurant_id)}</h3>
+                ${ratingBlock}
+              </div>
+              <div class="cuisines">${escapeHtml(cuisines)}</div>
+              <div class="meta">${escapeHtml(String(cost))}${escapeHtml(ac)}</div>
+              <div class="explain"><strong>What to know: </strong>${escapeHtml(r.explanation || "")}</div>
+            </article>`;
+          }
+        }
+        
+        if (data.debug) {
+          html += `<p class="debug">Matched ${data.debug.candidates_after_filter ?? "?"} restaurants | LLM analyzed ${data.debug.n_sent_to_llm ?? "?"} options | Request ID ${escapeHtml(data.request_id || "")}</p>`;
+        }
+        
+        out.innerHTML = html;
+        // Scroll to results smoothly
+        document.querySelector('.wrap').scrollIntoView({behavior: 'smooth', block: 'start'});
+
+      } catch (err) {
+        out.innerHTML = `<p class="err">${escapeHtml(String(err))}</p>`;
+      } finally {
+        go.disabled = false;
+        go.textContent = "Search Restaurants";
+      }
+    });
+
+    function escapeHtml(s) {
+      const d = document.createElement("div");
+      d.textContent = s;
+      return d.innerHTML;
+    }
+  </script>
+</body>
+</html>

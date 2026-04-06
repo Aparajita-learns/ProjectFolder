@@ -1,0 +1,17 @@
+# Phase 1+ processed data (regenerate with phase1_ingestion/scripts/ingest.py)
+data/processed/*.parquet
+data/processed/*.meta.json
+data/processed/*.sqlite
+data/raw/
+
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
