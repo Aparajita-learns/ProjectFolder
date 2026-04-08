@@ -17,7 +17,7 @@ class UserPreferences(BaseModel):
     cuisines: list[str] = Field(default_factory=list, description="If empty, no cuisine filter (any cuisine).")
     min_rating: float | None = Field(default=None, ge=0.0, le=5.0)
     additional_preferences: str = Field(default="", max_length=500)
-    desired_top_k: int = Field(default=5, ge=1, le=10)
+    desired_top_k: int = Field(default=5, ge=1, le=20)
 
     @field_validator("cuisines", mode="before")
     @classmethod
